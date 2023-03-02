@@ -7,7 +7,8 @@ import numpy as np
 from sklearn.impute import KNNImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.model_selection import KFold
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000)
@@ -30,19 +31,29 @@ X = pd.get_dummies(X)  # convert m/f to dummy columns
 imputer = KNNImputer()
 X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+kfold = KFold(n_splits=5, shuffle=True)
 
-model = LogisticRegression(fit_intercept=True, solver="liblinear")
+accuracies = []
 
-model.fit(X_train, y_train.values.ravel())
-y_pred = model.predict(X_test)
-y_prob = model.predict_proba(X_test)
+for train_index, test_index in kfold.split(X):
+	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-y_test_array = np.array(y_test['Group'])
+	model = LogisticRegression(fit_intercept=True, solver="liblinear")
 
-cm = pd.crosstab(y_test_array, y_pred, rownames=['Actual'], colnames=['Predicted'])
-print(cm)
-print(classification_report(y_test, y_pred))
+	model.fit(X_train, y_train.values.ravel())
+	y_pred = model.predict(X_test)
+	y_prob = model.predict_proba(X_test)
+
+	y_test_array = np.array(y_test['Group'])
+	
+	accuracy = accuracy_score(y_test_array, y_pred)
+	accuracies.append(accuracy)
+
+	cm = pd.crosstab(y_test_array, y_pred, rownames=['Actual'], colnames=['Predicted'])
+	print(cm)
+	print(classification_report(y_test, y_pred))
+	
+print(accuracies)
 
 """
 Results:
