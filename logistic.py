@@ -119,7 +119,11 @@ kfold = KFold(n_splits=5, shuffle=True)
 accuracies = []
 
 for train_index, test_index in kfold.split(X_smote):
-	X_train, X_test, y_train, y_test = train_test_split(X_smote, y_smote, test_size=0.2)
+	# X_train, X_test, y_train, y_test = train_test_split(X_smote, y_smote, test_size=0.2)
+	X_train = X.loc[X.index.intersection(train_index), :]
+	X_test = X.loc[X.index.intersection(test_index), :]
+	y_train = y.loc[y.index.intersection(train_index), :]
+	y_test = y.loc[y.index.intersection(test_index), :]
 
 	model = LogisticRegression(fit_intercept=True, solver="liblinear")
 
