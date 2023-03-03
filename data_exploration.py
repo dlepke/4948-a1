@@ -10,7 +10,10 @@ df = pd.read_csv('./alzheimer.csv', skiprows=1, names=(
 	'Group', 'M/F', 'Age', 'EDUC', 'SES', 'MMSE', 'CDR', 'eTIV', 'nWBV', 'ASF'
 ))
 
+print(df.describe())
+
 X = df.copy()
+print(X.columns)
 y = df[['Group']]
 del X['Group']
 
@@ -29,7 +32,7 @@ demented = df[df['Group'] == 'Demented']
 not_demented = df[df['Group'] == 'Nondemented']
 converted = df[df['Group'] == 'Converted']
 
-plt.figure(figsize=(30, 15))
+plt.figure(figsize=(25, 12))
 
 plt.subplot(331)
 plt.hist([demented['M/F'], not_demented['M/F'], converted['M/F']], rwidth=0.8)
@@ -101,5 +104,42 @@ Feature selection:
 	- EDUC
 	- nWBV
 - For stacked model, TBD
+- RFE results:
+	SES
+	CDR
+	nWBV
+	ASF
+	M/F_F
+- FFS results:
+	feature         ffs
+	7     ASF    1.430156
+	5    eTIV    2.684062
+	0     Age   14.149083
+	8   M/F_F   18.656900
+	9   M/F_M   18.656900
+	6    nWBV   28.090159
+	1    EDUC   28.760364
+	2     SES   41.344708
+	3    MMSE  170.239290
+	4     CDR  496.623041
+- feature importance results:
+	importance    feature
+	3    0.482053     CDR
+	2    0.236816    MMSE
+	1    0.091915     SES
+	4    0.067490    eTIV
+	5    0.066786     ASF
+	0    0.054942     Age
+
+Data correlations w/ positive dementia:
+- Males had a higher proportion
+- Age, no obvious relationship
+- Loose correlation with mid-level education
+- Higher SES loosely correlated (socioeconomic status)
+- Lower MMSE strongly correlated (mini mental state examination)
+- Higher CDR strongly correlated (clinical dementia rating)
+- eTIV, no obvious correlation (estimated intracranial volume)
+- Lower nWBV strongly correlated (normalized whole brain volume)
+- ASF, no obvious correlation (atlas scaling factor)
 
 """
