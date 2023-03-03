@@ -26,7 +26,7 @@ del X['Group']
 # based on feature importance ratings
 del X['M/F']
 del X['EDUC']
-del X['nWBV']
+# del X['nWBV']
 
 X = pd.get_dummies(X)  # convert m/f to dummy columns
 
@@ -44,11 +44,8 @@ ada_boost = AdaBoostClassifier()
 grad_boost = GradientBoostingClassifier()
 xgb_boost = XGBClassifier()
 eclf = EnsembleVoteClassifier(clfs=[ada_boost, grad_boost, xgb_boost], voting="hard")
-# classifiers = [ada_boost, grad_boost, xgb_boost, eclf]
 
-# for clf in classifiers:
 for train_index, test_index in kfold.split(X_smote):
-	# X_train, X_test, y_train, y_test = train_test_split(X_smote, y_smote, test_size=0.2)
 	X_train = X.loc[X.index.intersection(train_index), :]
 	X_test = X.loc[X.index.intersection(test_index), :]
 	y_train = y.loc[y.index.intersection(train_index), :]

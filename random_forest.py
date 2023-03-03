@@ -35,29 +35,55 @@ del X['nWBV']
 imputer = KNNImputer()
 X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
 
-smote = SMOTE()
-X_smote, y_smote = smote.fit_resample(X, y)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+# smote = SMOTE()
+# X_smote, y_smote = smote.fit_resample(X_train, y_train)
+#
+# # # scaler = StandardScaler()
+# # # X = scaler.fit_transform(X)
+#
+# rf = RandomForestClassifier(n_estimators=10000, max_features=2, max_depth=4)
+#
+# rf.fit(X_smote, y_smote.values.ravel())
+# y_pred = rf.predict(X_test)
+# y_prob = rf.predict_proba(X_test)
+#
+# y_test_array = np.array(y_test['Group'])
+#
+# cm = pd.crosstab(y_test_array, y_pred, rownames=['Actual'], colnames=['Predicted'])
+# print(cm)
+# print(classification_report(y_test, y_pred))
 
-# kfold = KFold(n_splits=5, shuffle=True)
+
+kfold = KFold(n_splits=5, shuffle=True)
 
 accuracies = []
 
-# for train_index, test_index in kfold.split(X_smote):
-X_train, X_test, y_train, y_test = train_test_split(X_smote, y_smote, test_size=0.2)
+for train_index, test_index in kfold.split(X):
+	X_train = X.loc[X.index.intersection(train_index), :]
+	X_test = X.loc[X.index.intersection(test_index), :]
+	y_train = y.loc[y.index.intersection(train_index), :]
+	y_test = y.loc[y.index.intersection(test_index), :]
 
-rf = RandomForestClassifier(n_estimators=10000, max_features=2, max_depth=4)
+	smote = SMOTE()
+	X_smote, y_smote = smote.fit_resample(X_train, y_train)
 
-rf.fit(X_train, y_train.values.ravel())
-y_pred = rf.predict(X_test)
-# y_prob = rf.predict_proba(X_test)
+	# scaler = StandardScaler()
+	# X = scaler.fit_transform(X)
 
-y_test_array = np.array(y_test['Group'])
+	model = RandomForestClassifier(n_estimators=10000, max_features=2, max_depth=4)
 
-accuracies.append(accuracy_score(y_test_array, y_pred))
+	model.fit(X_smote, y_smote.values.ravel())
+	y_pred = model.predict(X_test)
+	y_prob = model.predict_proba(X_test)
 
-cm = pd.crosstab(y_test_array, y_pred, rownames=['Actual'], colnames=['Predicted'])
-print(cm)
-print(classification_report(y_test, y_pred))
+	y_test_array = np.array(y_test['Group'])
+
+	accuracies.append(accuracy_score(y_test_array, y_pred))
+
+	cm = pd.crosstab(y_test_array, y_pred, rownames=['Actual'], colnames=['Predicted'])
+	print(cm)
+	print(classification_report(y_test, y_pred))
 
 print(accuracies)
 
@@ -65,15 +91,15 @@ print(accuracies)
 """
 Get numerical feature importances
 """
-importances = list(rf.feature_importances_)
-
-df_importance = pd.DataFrame()
-
-for i in range(0, len(importances)):
-	df_importance = df_importance.append({"importance": importances[i], "feature": X.columns[i]}, ignore_index=True)
-
-df_importance = df_importance.sort_values(by=['importance'], ascending=False)
-print(df_importance)
+# importances = list(rf.feature_importances_)
+#
+# df_importance = pd.DataFrame()
+#
+# for i in range(0, len(importances)):
+# 	df_importance = df_importance.append({"importance": importances[i], "feature": X.columns[i]}, ignore_index=True)
+#
+# df_importance = df_importance.sort_values(by=['importance'], ascending=False)
+# print(df_importance)
 
 """
 Grid searching for best model params found:

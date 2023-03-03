@@ -30,24 +30,63 @@ X = pd.get_dummies(X)  # convert m/f to dummy columns
 imputer = KNNImputer()
 X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
 
+
+"""
+Without kfold
+"""
 # scaler = StandardScaler()
 # X = scaler.fit_transform(X)
 
-smote = SMOTE()
-X_smote, y_smote = smote.fit_resample(X, y)
+# smote = SMOTE()
+# X_smote, y_smote = smote.fit_resample(X, y)
+#
+# X_train, X_test, y_train, y_test = train_test_split(X_smote, y_smote, test_size=0.2)
+#
+# clf = BaggingClassifier(n_estimators=1000)
+# clf.fit(X_train, y_train)
+#
+# y_pred = clf.predict(X_test)
+# y_test_array = np.array(y_test['Group'])
+#
+# accuracy = accuracy_score(y_test_array, y_pred)
+#
+# cm = pd.crosstab(y_test_array, y_pred, rownames=['Actual'], colnames=['Predicted'])
+# print(cm)
+# print(classification_report(y_test, y_pred))
+#
+# print(accuracy)
 
-X_train, X_test, y_train, y_test = train_test_split(X_smote, y_smote, test_size=0.2)
+"""
+Kfold
+"""
+kfold = KFold(n_splits=5, shuffle=True)
 
-clf = BaggingClassifier(n_estimators=1000)
-clf.fit(X_train, y_train)
+accuracies = []
 
-y_pred = clf.predict(X_test)
-y_test_array = np.array(y_test['Group'])
+for train_index, test_index in kfold.split(X):
+	X_train = X.loc[X.index.intersection(train_index), :]
+	X_test = X.loc[X.index.intersection(test_index), :]
+	y_train = y.loc[y.index.intersection(train_index), :]
+	y_test = y.loc[y.index.intersection(test_index), :]
 
-accuracy = accuracy_score(y_test_array, y_pred)
+	smote = SMOTE()
+	X_smote, y_smote = smote.fit_resample(X_train, y_train)
 
-cm = pd.crosstab(y_test_array, y_pred, rownames=['Actual'], colnames=['Predicted'])
-print(cm)
-print(classification_report(y_test, y_pred))
+	# scaler = StandardScaler()
+	# X = scaler.fit_transform(X)
 
-print(accuracy)
+	model = BaggingClassifier(n_estimators=1000)
+
+	model.fit(X_smote, y_smote.values.ravel())
+	y_pred = model.predict(X_test)
+	y_prob = model.predict_proba(X_test)
+
+	y_test_array = np.array(y_test['Group'])
+
+	accuracies.append(accuracy_score(y_test_array, y_pred))
+
+	cm = pd.crosstab(y_test_array, y_pred, rownames=['Actual'], colnames=['Predicted'])
+	print(cm)
+	print(classification_report(y_test, y_pred))
+
+print(accuracies)
