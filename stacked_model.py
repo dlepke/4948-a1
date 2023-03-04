@@ -1,14 +1,3 @@
-"""
-A stacked model using:
-- LogisticRegression,
-- BaggingClassifier,
-- RandomForestClassifier,
-- EnsembleVoteClassifier, combination of:
-	- AdaBoostClassifier,
-	- GradientBoostingClassifier,
-	- XGBClassifier
-"""
-
 import pandas as pd
 import numpy as np
 from sklearn.impute import KNNImputer
@@ -44,15 +33,15 @@ X, y = smote.fit_resample(X, y)
 # X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.70)
 # X_test, X_val, y_test, y_val = train_test_split(X_temp, y_temp, test_size=0.50)
 
-kfold = KFold(n_splits=5)
+kfold = KFold(n_splits=5, shuffle=True)
 
+logistic_accuracies = []
+rf_accuracies = []
+bag_accuracies = []
+eclf_accuracies = []
 stacked_accuracies = []
 
 for train_index, test_index in kfold.split(X):
-	# X_train = X.iloc[train_index, :]
-	# y_train = X.iloc[train_index, :]
-	# X_test = X.iloc[test_index, :]
-	# y_test = X.iloc[test_index, :]
 	X_train = X.loc[X.index.intersection(train_index), :]
 	X_test = X.loc[X.index.intersection(test_index), :]
 	y_train = y.loc[y.index.intersection(train_index), :]
@@ -153,8 +142,6 @@ for train_index, test_index in kfold.split(X):
 	print(classification_report(y_test, y_pred_eclf))
 	
 	""" Stacked model """
-
-
 	def convert_to_dummy(cat_df):
 		columns = cat_df.columns
 		
@@ -236,5 +223,5 @@ for train_index, test_index in kfold.split(X):
 	print(classification_report(y_test, stacked_predictions))
 	
 	stacked_accuracies.append(accuracy_score(y_test, stacked_predictions))
-	
-print(stacked_accuracies)
+
+print("stacked accuracies: ", stacked_accuracies)
